@@ -7,7 +7,6 @@ class Users extends CI_Controller
     {
         parent::__construct();
         $this->load->model('user_model');
-        $this->load->helper('url');
     }
 
     function index()
@@ -17,6 +16,36 @@ class Users extends CI_Controller
     }
 
 
+    public function __construct() {
+        parent::__construct();
+        $this->load->library('activity_log');
+      }
+    
+      public function some_activity() {
+        // melakukan aktivitas
+        $id_user = 1; // contoh ID user
+        $discripsi = 'Melakukan Login'; // contoh detail aktivitas
+        $this->activity_log->log_activity($id_user, $discripsi);
+      }
+    
+    }
+
+
+    function save_user()
+    {
+
+        $id       =   $this->input->post('id_user');
+        $discripsi   =   $this->input->post('discripsi');
+        $status      =   $this->input->post('status');
+        $data       =   array('id_user' => $id, 'discripsi' => $discripsi, 'status' => $status);
+        $this->user_model->save_user($data);
+
+        //contoh panggil helper log
+        helper_log("login", "user login");
+        //silahkan di ganti2 aja kalimatnya
+
+        redirect('admin/index');
+    }
 
 
     public function save()
@@ -46,7 +75,7 @@ class Users extends CI_Controller
             } else {
                 $id = $this->product_model->insert();
                 if ($id !== 0) {
-                    $this->logActivities_model->insert('products', 'tambah data produk dengan id = ' . $id, '', $id, date("Y-m-d H:i:s"), $this->ion_auth->user()->row()->username);
+                    $this->user_activity_model->insert('users', 'tambah data produk dengan id = ' . $id, '', $id, date("Y-m-d H:i:s"), $this->ion_auth->user()->row()->username);
                 }
                 redirect('product');
             }
@@ -76,8 +105,8 @@ class Users extends CI_Controller
                 )
             );
             $id = $post["id"];
-            $products = $this->product_model->findById($id);
-            $data['products'] = $products;
+            $users = $this->product_model->findById($id);
+            $data['users'] = $users;
 
             if ($this->form_validation->run() == FALSE) {
                 $data['title'] = "Edit Produk";
@@ -87,16 +116,16 @@ class Users extends CI_Controller
 
                 if ($this->product_model->update()) {
 
-                    $products_new = $this->product_model->findById($id);
+                    $users_new = $this->product_model->findById($id);
 
-                    if ($products["product_name"] !== $products_new["product_name"]) {
-                        $this->logActivities_model->insert('products', 'update data produk dengan id = ' . $id . ' field = product_name', $products["product_name"], $products_new["product_name"], date("Y-m-d H:i:s"), $this->ion_auth->user()->row()->username);
+                    if ($users["product_name"] !== $users_new["product_name"]) {
+                        $this->user_activity_model->insert('users', 'update data produk dengan id = ' . $id . ' field = product_name', $users["product_name"], $users_new["product_name"], date("Y-m-d H:i:s"), $this->ion_auth->user()->row()->username);
                     }
-                    if ($products["description"] !== $products_new["description"]) {
-                        $this->logActivities_model->insert('products', 'update data produk dengan id = ' . $id . ' field = description', $products["description"], $products_new["description"], date("Y-m-d H:i:s"), $this->ion_auth->user()->row()->username);
+                    if ($users["description"] !== $users_new["description"]) {
+                        $this->user_activity_model->insert('users', 'update data produk dengan id = ' . $id . ' field = description', $users["description"], $users_new["description"], date("Y-m-d H:i:s"), $this->ion_auth->user()->row()->username);
                     }
-                    if ($products["url"] !== $products_new["url"]) {
-                        $this->logActivities_model->insert('products', 'update data produk dengan id = ' . $id . ' field = url', $products["url"], $products_new["url"], date("Y-m-d H:i:s"), $this->ion_auth->user()->row()->username);
+                    if ($users["url"] !== $users_new["url"]) {
+                        $this->user_activity_model->insert('users', 'update data produk dengan id = ' . $id . ' field = url', $users["url"], $users_new["url"], date("Y-m-d H:i:s"), $this->ion_auth->user()->row()->username);
                     }
 
                     redirect('product');
@@ -115,7 +144,7 @@ class Users extends CI_Controller
     {
         if ($this->ion_auth->logged_in()) {
             if ($this->product_model->delete($id)) {
-                $this->logActivities_model->insert('products', 'delete  data produk dengan id = ' . $id, $id, '', date("Y-m-d H:i:s"), $this->ion_auth->user()->row()->username);
+                $this->user_activity_model->insert('users', 'delete  data produk dengan id = ' . $id, $id, '', date("Y-m-d H:i:s"), $this->ion_auth->user()->row()->username);
             }
             redirect('product');
         } else {

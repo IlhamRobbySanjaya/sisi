@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class LogActivities_model extends CI_Model
+class User_activity_model extends CI_Model
 {
     public function __construct()
     {
@@ -12,28 +12,28 @@ class LogActivities_model extends CI_Model
     {
         $this->db->select('*');
         $this->db->where('active', 1);
-        $query = $this->db->get("log_activities");
+        $query = $this->db->get("user_activity");
         return $query;
     }
 
-    function insert($tables_name, $description, $before, $after, $create_date, $create_by)
+    function insert($no_activity, $id_user, $discripsi, $status, $menu_id, $delete_mark)
     {
         $data = array(
-            'tables_name' => $tables_name,
-            'description' => $description,
-            'before' => $before,
-            'after' => $after,
-            'create_date' => $create_date,
-            'create_by' => $create_by,
+            'no_activity' => $no_activity,
+            'id_user' => $id_user,
+            'discripsi' => $discripsi,
+            'status' => $status,
+            'menu_id' => $menu_id,
+            'delete_mark' => $delete_mark,
             'active' => '1',
         );
-        $this->db->insert('log_activities', $data);
+        $this->db->insert('user_activity', $data);
     }
 
     public function make_query()
     {
         $query = "
-        SELECT * from log_activities
+        SELECT * from user_activity
         WHERE active=1
         ";
 

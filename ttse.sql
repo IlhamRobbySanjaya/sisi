@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 05, 2023 at 09:38 PM
+-- Generation Time: May 07, 2023 at 09:58 AM
 -- Server version: 10.4.24-MariaDB
 -- PHP Version: 7.4.28
 
@@ -28,10 +28,12 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `cuti` (
-  `id` int(11) NOT NULL,
-  `karyawan_id` int(11) NOT NULL,
-  `tanggal_cuti` date NOT NULL,
-  `jumlah` int(11) NOT NULL
+  `id_cuti` int(11) NOT NULL,
+  `id_karyawan` int(11) NOT NULL,
+  `tanggal_mulai` date NOT NULL,
+  `tanggal_selesai` date NOT NULL,
+  `jenis_cuti` enum('Tahunan','Sakit','Melahirkan') NOT NULL,
+  `keterangan` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -61,24 +63,30 @@ CREATE TABLE `i_error_application` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `jabatan`
+--
+
+CREATE TABLE `jabatan` (
+  `id_jabatan` int(11) NOT NULL,
+  `nama_jabatan` varchar(255) NOT NULL,
+  `gaji_pokok` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `karyawan`
 --
 
 CREATE TABLE `karyawan` (
-  `id` int(11) NOT NULL,
-  `nip` varchar(12) NOT NULL,
-  `nik` varchar(12) NOT NULL,
-  `nama` varchar(100) NOT NULL,
-  `jenis_kelamin` enum('laki-laki','perempuan') NOT NULL,
-  `tempat_lahir` varchar(100) NOT NULL,
-  `tanggal_lahir` date NOT NULL,
-  `telpon` varchar(12) NOT NULL,
-  `agama` varchar(15) NOT NULL,
-  `status_nikah` enum('belum nikah','nikah') NOT NULL,
+  `id_karyawan` int(11) NOT NULL,
+  `nama` varchar(255) NOT NULL,
   `alamat` text NOT NULL,
-  `golongan_id` int(11) NOT NULL,
-  `foto` varchar(150) NOT NULL,
-  `jabatan` varchar(20) NOT NULL
+  `tanggal_lahir` date NOT NULL,
+  `jenis_kelamin` enum('Laki-laki','Perempuan') NOT NULL,
+  `no_telepon` varchar(20) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `id_jabatan` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -121,17 +129,39 @@ CREATE TABLE `menu_user` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `penggajian`
+-- Table structure for table `payroll`
 --
 
-CREATE TABLE `penggajian` (
-  `id` int(11) NOT NULL,
+CREATE TABLE `payroll` (
+  `id_payroll` int(11) NOT NULL,
+  `id_karyawan` int(11) NOT NULL,
+  `bulan` date NOT NULL,
+  `gaji_pokok` int(11) NOT NULL,
+  `tunjangan_jabatan` int(11) NOT NULL,
+  `total_masuk` int(11) NOT NULL,
+  `total_cuti` int(11) NOT NULL,
+  `total_terlambat` int(11) NOT NULL,
+  `potongan_bpjs_kesehatan` int(11) NOT NULL,
+  `potongan_bpjs_ketenagakerjaan` int(11) NOT NULL,
+  `potongan_pensiun` int(11) NOT NULL,
+  `potongan_pinjaman` int(11) NOT NULL,
+  `potongan_lain` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `presensi`
+--
+
+CREATE TABLE `presensi` (
+  `id_presensi` int(11) NOT NULL,
+  `id_karyawan` int(11) NOT NULL,
   `tanggal` date NOT NULL,
-  `keterangan` text NOT NULL,
-  `karyawan_id` int(11) NOT NULL,
-  `jumlah_gaji` int(11) NOT NULL,
-  `potongan` int(11) NOT NULL,
-  `total_gaji` int(11) NOT NULL
+  `jam_masuk` time NOT NULL,
+  `jam_istirahat_keluar` time NOT NULL,
+  `jam_istirahat_masuk` time NOT NULL,
+  `jam_pulang` time NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -141,22 +171,12 @@ CREATE TABLE `penggajian` (
 --
 
 CREATE TABLE `sppd` (
-  `id` int(11) NOT NULL,
-  `no_sppd` int(11) NOT NULL,
+  `id_sppd` int(11) NOT NULL,
+  `id_karyawan` int(11) NOT NULL,
   `tanggal_berangkat` date NOT NULL,
   `tanggal_kembali` date NOT NULL,
-  `tempat_berngkat` varchar(150) NOT NULL,
-  `tempat_tujuan` varchar(150) NOT NULL,
-  `lama_perjalanan` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `tgl_berangkat` date NOT NULL,
-  `tgl_kembali` date NOT NULL,
-  `pemerintah` varchar(150) NOT NULL,
-  `penerima` varchar(150) NOT NULL,
-  `pengikut` varchar(150) NOT NULL,
-  `pembebanan_anggaran` varchar(150) NOT NULL,
-  `mata_anggaran` varchar(150) NOT NULL,
-  `dasar_surat` varchar(150) NOT NULL,
-  `keterangan` text NOT NULL
+  `tujuan` varchar(50) NOT NULL,
+  `biaya` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -188,9 +208,6 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `name`, `email`, `image`, `password`, `role_id`, `is_active`, `date_created`, `no_hp`, `wa`, `pin`, `delete_mark`, `create_by`, `update_by`, `update_date`) VALUES
-(5, 'Sandhika Galih', 'sandhikagalih@unpas.ac.id', 'profile1.jpg', '$2y$10$nXnrqGQTjpvg58OtOB/N.evYQjVlz7KIW37oUSQSQ2EgNMD0Dgrzq', 1, 1, 1552120289, '', '', '', '', '', '', NULL),
-(6, 'Doddy Ferdiansyah', 'doddy@gmail.com', 'profile.jpg', '$2y$10$FhGzXwwTWLN/yonJpDLR0.nKoeWlKWBoRG9bsk0jOAgbJ007XzeFO', 2, 1, 1552285263, '', '', '', '', '', '', NULL),
-(11, 'Sandhika Galih', 'sandhikagalih@gmail.com', 'default.jpg', '$2y$10$0QYEK1pB2L.Rdo.ZQsJO5eeTSpdzT7PvHaEwsuEyGSs0J1Qf5BoSq', 2, 1, 1553151354, '', '', '', '', '', '', NULL),
 (12, 'ilham', 'i@gmail.com', 'default.jpg', '$2y$10$aFG8BYSzZpheTjwbdO/tUu1g0C37erNteL0PYTVByH9Cv0gA7LIgi', 1, 1, 1683271505, '', '', '', '', '', '', NULL);
 
 -- --------------------------------------------------------
@@ -344,7 +361,8 @@ INSERT INTO `user_token` (`id`, `email`, `token`, `date_created`) VALUES
 -- Indexes for table `cuti`
 --
 ALTER TABLE `cuti`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id_cuti`),
+  ADD KEY `id_karyawan` (`id_karyawan`);
 
 --
 -- Indexes for table `i_error_application`
@@ -354,10 +372,17 @@ ALTER TABLE `i_error_application`
   ADD KEY `id_user` (`id_user`);
 
 --
+-- Indexes for table `jabatan`
+--
+ALTER TABLE `jabatan`
+  ADD PRIMARY KEY (`id_jabatan`);
+
+--
 -- Indexes for table `karyawan`
 --
 ALTER TABLE `karyawan`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id_karyawan`),
+  ADD KEY `id_jabatan` (`id_jabatan`);
 
 --
 -- Indexes for table `menu`
@@ -375,16 +400,25 @@ ALTER TABLE `menu_user`
   ADD KEY `menu_id` (`menu_id`);
 
 --
--- Indexes for table `penggajian`
+-- Indexes for table `payroll`
 --
-ALTER TABLE `penggajian`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `payroll`
+  ADD PRIMARY KEY (`id_payroll`),
+  ADD KEY `id_karyawan` (`id_karyawan`);
+
+--
+-- Indexes for table `presensi`
+--
+ALTER TABLE `presensi`
+  ADD PRIMARY KEY (`id_presensi`),
+  ADD KEY `id_karyawan` (`id_karyawan`);
 
 --
 -- Indexes for table `sppd`
 --
 ALTER TABLE `sppd`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id_sppd`),
+  ADD KEY `id_karyawan` (`id_karyawan`);
 
 --
 -- Indexes for table `user`
@@ -444,7 +478,7 @@ ALTER TABLE `user_token`
 -- AUTO_INCREMENT for table `cuti`
 --
 ALTER TABLE `cuti`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_cuti` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `i_error_application`
@@ -453,10 +487,16 @@ ALTER TABLE `i_error_application`
   MODIFY `error_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `jabatan`
+--
+ALTER TABLE `jabatan`
+  MODIFY `id_jabatan` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `karyawan`
 --
 ALTER TABLE `karyawan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_karyawan` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `menu`
@@ -471,16 +511,22 @@ ALTER TABLE `menu_user`
   MODIFY `no_seting` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `penggajian`
+-- AUTO_INCREMENT for table `payroll`
 --
-ALTER TABLE `penggajian`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `payroll`
+  MODIFY `id_payroll` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `presensi`
+--
+ALTER TABLE `presensi`
+  MODIFY `id_presensi` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `sppd`
 --
 ALTER TABLE `sppd`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_sppd` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `user`
@@ -529,6 +575,40 @@ ALTER TABLE `user_sub_menu`
 --
 ALTER TABLE `user_token`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `cuti`
+--
+ALTER TABLE `cuti`
+  ADD CONSTRAINT `cuti_ibfk_1` FOREIGN KEY (`id_karyawan`) REFERENCES `karyawan` (`id_karyawan`);
+
+--
+-- Constraints for table `karyawan`
+--
+ALTER TABLE `karyawan`
+  ADD CONSTRAINT `karyawan_ibfk_1` FOREIGN KEY (`id_jabatan`) REFERENCES `jabatan` (`id_jabatan`);
+
+--
+-- Constraints for table `payroll`
+--
+ALTER TABLE `payroll`
+  ADD CONSTRAINT `payroll_ibfk_1` FOREIGN KEY (`id_karyawan`) REFERENCES `karyawan` (`id_karyawan`);
+
+--
+-- Constraints for table `presensi`
+--
+ALTER TABLE `presensi`
+  ADD CONSTRAINT `presensi_ibfk_1` FOREIGN KEY (`id_karyawan`) REFERENCES `karyawan` (`id_karyawan`);
+
+--
+-- Constraints for table `sppd`
+--
+ALTER TABLE `sppd`
+  ADD CONSTRAINT `sppd_ibfk_1` FOREIGN KEY (`id_karyawan`) REFERENCES `karyawan` (`id_karyawan`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
